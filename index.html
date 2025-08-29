@@ -7,39 +7,50 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Gemini Image Generator</h1>
-        
-        <div class="input-section">
-            <div class="form-group">
-                <label for="api-key">OpenRouter API Key:</label>
-                <input type="password" id="api-key" placeholder="Enter your OpenRouter API key">
+    <div class="main-layout">
+        <div class="main-content">
+            <div class="container">
+                <h1>Gemini Image Generator</h1>
+                
+                <div class="input-section">
+                    <div class="form-group">
+                        <label for="api-key">OpenRouter API Key:</label>
+                        <input type="password" id="api-key" placeholder="Enter your OpenRouter API key">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="image-upload">Upload Image:</label>
+                        <input type="file" id="image-upload" accept="image/*">
+                        <div id="image-preview" class="image-preview"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="prompt">Prompt:</label>
+                        <textarea id="prompt" placeholder="Enter your prompt for the image..." rows="4"></textarea>
+                    </div>
+                    
+                    <button id="generate-btn" disabled>Generate</button>
+                </div>
+                
+                <div class="output-section">
+                    <h2>Response</h2>
+                    <div id="response" class="response-area">
+                        <p class="placeholder">Your response will appear here...</p>
+                    </div>
+                </div>
+                
+                <div class="loading" id="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Generating response...</p>
+                </div>
             </div>
-            
-            <div class="form-group">
-                <label for="image-upload">Upload Image:</label>
-                <input type="file" id="image-upload" accept="image/*">
-                <div id="image-preview" class="image-preview"></div>
-            </div>
-            
-            <div class="form-group">
-                <label for="prompt">Prompt:</label>
-                <textarea id="prompt" placeholder="Enter your prompt for the image..." rows="4"></textarea>
-            </div>
-            
-            <button id="generate-btn" disabled>Generate</button>
         </div>
-        
-        <div class="output-section">
-            <h2>Response</h2>
-            <div id="response" class="response-area">
-                <p class="placeholder">Your response will appear here...</p>
+
+        <div class="sidebar">
+            <h3>Recent Prompts</h3>
+            <div id="prompt-history" class="prompt-history">
+                <p class="placeholder">No recent prompts yet...</p>
             </div>
-        </div>
-        
-        <div class="loading" id="loading" style="display: none;">
-            <div class="spinner"></div>
-            <p>Generating response...</p>
         </div>
     </div>
 

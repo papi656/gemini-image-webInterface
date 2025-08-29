@@ -7,11 +7,13 @@ class GeminiImageGenerator {
         this.imagePreview = document.getElementById('image-preview');
         this.responseArea = document.getElementById('response');
         this.loading = document.getElementById('loading');
+        this.promptHistory = document.getElementById('prompt-history');
         
         this.uploadedImage = null;
         this.uploadedImageBase64 = null;
         
         this.initEventListeners();
+        this.loadPromptHistory();
     }
     
     initEventListeners() {
@@ -91,6 +93,9 @@ class GeminiImageGenerator {
             const apiKey = this.apiKeyInput.value.trim();
             const prompt = this.promptInput.value.trim();
             const mimeType = this.uploadedImage.type;
+            
+            // Save prompt to history
+            this.savePromptToHistory(prompt);
             
             const response = await this.callGeminiAPI(apiKey, prompt, mimeType);
             this.handleAPIResponse(response);
@@ -245,6 +250,84 @@ class GeminiImageGenerator {
     
     showSuccess(message) {
         this.responseArea.innerHTML = `<div class="success">${this.escapeHtml(message)}</div>`;
+    }
+    
+    // Prompt history methods
+    savePromptToHistory(promptText) {
+        const timestamp = new Date().getTime();
+        const promptData = {
+            text: promptText,
+            timestamp: timestamp
+        };
+        
+        let history = this.getPromptHistory();
+        
+        // Remove duplicates and keep only unique prompts
+        history = history.filter(item => item.text !== promptText);
+        
+        // Add new prompt to the beginning
+        history.unshift(promptData);
+        
+        // Keep only the latest 5 prompts
+        history = history.slice(0, 5);
+        
+        localStorage.setItem('gemini-prompt-history', JSON.stringify(history));
+        this.displayPromptHistory(history);
+    }
+    
+    getPromptHistory() {
+        const history = localStorage.getItem('gemini-prompt-history');
+        return history ? JSON.parse(history) : [];
+    }
+    
+    loadPromptHistory() {
+        const history = this.getPromptHistory();
+        this.displayPromptHistory(history);
+    }
+    
+    displayPromptHistory(history) {
+        if (history.length === 0) {
+            this.promptHistory.innerHTML = '<p class="placeholder">No recent prompts yet...</p>';
+            return;
+        }
+        
+        const historyHTML = history.map(prompt => `
+            <div class="prompt-item" data-prompt="${this.escapeHtml(prompt.text)}">
+                <div class="prompt-text">${this.escapeHtml(prompt.text)}</div>
+                <div class="prompt-time">${this.formatTime(prompt.timestamp)}</div>
+            </div>
+        `).join('');
+        
+        this.promptHistory.innerHTML = historyHTML;
+        this.addPromptClickListeners();
+    }
+    
+    addPromptClickListeners() {
+        const promptItems = this.promptHistory.querySelectorAll('.prompt-item');
+        promptItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                const prompt = item.getAttribute('data-prompt');
+                this.promptInput.value = prompt;
+                this.promptInput.focus();
+                this.validateForm();
+            });
+        });
+    }
+    
+    formatTime(timestamp) {
+        const now = Date.now();
+        const diff = now - timestamp;
+        const seconds = Math.floor(diff / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+        
+        if (seconds < 60) return 'Just now';
+        if (minutes < 60) return `${minutes}m ago`;
+        if (hours < 24) return `${hours}h ago`;
+        if (days < 7) return `${days}d ago`;
+        
+        return new Date(timestamp).toLocaleDateString();
     }
 }
 
