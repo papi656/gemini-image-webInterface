@@ -60,7 +60,7 @@ class GeminiImageGenerator {
         const reader = new FileReader();
         reader.onload = (e) => {
             this.uploadedImage = file;
-            this.imagePreview.style.display = 'block';
+            this.imagePreview.style.display = 'flex';
             this.imagePreview.innerHTML = `<img src="${e.target.result}" alt="Uploaded image">`;
             
             // Convert to base64 for API
