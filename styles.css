@@ -143,12 +143,35 @@ input[type="file"] {
     white-space: pre-wrap;
 }
 
+.image-container {
+    margin: 20px 0;
+    text-align: center;
+}
+
 .response-image {
     max-width: 100%;
     max-height: 400px;
     border-radius: 8px;
-    margin: 10px 0;
+    margin-bottom: 10px;
     display: block;
+}
+
+.download-btn {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-block;
+}
+
+.download-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
 }
 
 .loading {

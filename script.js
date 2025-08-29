@@ -167,16 +167,61 @@ class GeminiImageGenerator {
         if (message.images && message.images.length > 0) {
             for (const image of message.images) {
                 if (image.type === 'image_url' && image.image_url && image.image_url.url) {
-                    responseHTML += `<img src="${image.image_url.url}" alt="Generated image" class="response-image">`;
+                    const imageUrl = image.image_url.url;
+                    const timestamp = new Date().getTime();
+                    const filename = `generated-image-${timestamp}.png`;
+                    
+                    responseHTML += `
+                        <div class="image-container">
+                            <img src="${imageUrl}" alt="Generated image" class="response-image">
+                            <button class="download-btn" data-image="${imageUrl}" data-filename="${filename}">
+                                Download Image
+                            </button>
+                        </div>
+                    `;
                 }
             }
         }
         
         if (responseHTML) {
             this.responseArea.innerHTML = responseHTML;
+            
+            // Add event listeners to download buttons
+            this.addDownloadListeners();
         } else {
             this.showError('No readable content in response');
         }
+    }
+    
+    addDownloadListeners() {
+        const downloadButtons = this.responseArea.querySelectorAll('.download-btn');
+        downloadButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const imageUrl = button.getAttribute('data-image');
+                const filename = button.getAttribute('data-filename');
+                this.downloadImage(imageUrl, filename);
+            });
+        });
+    }
+    
+    downloadImage(url, filename) {
+        fetch(url)
+            .then(response => response.blob())
+            .then(blob => {
+                const blobUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(blobUrl);
+                document.body.removeChild(a);
+            })
+            .catch(error => {
+                console.error('Download error:', error);
+                this.showError('Failed to download image');
+            });
     }
     
     escapeHtml(text) {
