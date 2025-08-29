@@ -4,13 +4,13 @@ class GeminiImageGenerator {
         this.imageUpload = document.getElementById('image-upload');
         this.promptInput = document.getElementById('prompt');
         this.generateBtn = document.getElementById('generate-btn');
-        this.imagePreview = document.getElementById('image-preview');
+        this.imagePreviews = document.getElementById('image-previews');
         this.responseArea = document.getElementById('response');
         this.loading = document.getElementById('loading');
         this.promptHistory = document.getElementById('prompt-history');
         
-        this.uploadedImage = null;
-        this.uploadedImageBase64 = null;
+        this.uploadedImages = [];
+        this.uploadedImagesBase64 = [];
         
         this.initEventListeners();
         this.loadPromptHistory();
@@ -40,45 +40,97 @@ class GeminiImageGenerator {
     
     validateForm() {
         const hasApiKey = this.apiKeyInput.value.trim().length > 0;
-        const hasImage = this.uploadedImage !== null;
+        const hasImages = this.uploadedImages.length > 0;
         const hasPrompt = this.promptInput.value.trim().length > 0;
-        const isValid = hasApiKey && hasImage && hasPrompt;
+        const isValid = hasApiKey && hasImages && hasPrompt;
         
         this.generateBtn.disabled = !isValid;
         return isValid;
     }
     
     handleImageUpload(event) {
-        const file = event.target.files[0];
-        if (!file) return;
+        const files = Array.from(event.target.files);
+        if (files.length === 0) return;
         
-        // Check if file is an image
-        if (!file.type.startsWith('image/')) {
-            this.showError('Please upload an image file');
-            return;
-        }
+        // Clear previous uploads
+        this.uploadedImages = [];
+        this.uploadedImagesBase64 = [];
+        this.imagePreviews.innerHTML = '';
         
-        // Preview image
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            this.uploadedImage = file;
-            this.imagePreview.style.display = 'flex';
-            this.imagePreview.innerHTML = `<img src="${e.target.result}" alt="Uploaded image">`;
+        files.forEach((file, index) => {
+            // Check if file is an image
+            if (!file.type.startsWith('image/')) {
+                this.showError('Please upload only image files');
+                return;
+            }
             
-            // Convert to base64 for API
-            this.convertImageToBase64(file);
-        };
-        reader.readAsDataURL(file);
+            // Preview image
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.uploadedImages.push(file);
+                
+                // Create preview item
+                const previewItem = document.createElement('div');
+                previewItem.className = 'image-preview-item';
+                previewItem.innerHTML = `
+                    <img src="${e.target.result}" alt="Uploaded image ${index + 1}">
+                    <button class="remove-btn" data-index="${index}">×</button>
+                    <span class="image-number">${index + 1}</span>
+                `;
+                this.imagePreviews.appendChild(previewItem);
+                
+                // Add remove button listener
+                previewItem.querySelector('.remove-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.removeImage(index);
+                });
+                
+                // Convert to base64 for API
+                this.convertImageToBase64(file, index);
+            };
+            reader.readAsDataURL(file);
+        });
         
         this.validateForm();
     }
     
-    convertImageToBase64(file) {
+    removeImage(index) {
+        this.uploadedImages.splice(index, 1);
+        this.uploadedImagesBase64.splice(index, 1);
+        this.updateImagePreviews();
+        this.validateForm();
+    }
+    
+    updateImagePreviews() {
+        this.imagePreviews.innerHTML = '';
+        this.uploadedImages.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'image-preview-item';
+                previewItem.innerHTML = `
+                    <img src="${e.target.result}" alt="Uploaded image ${index + 1}">
+                    <button class="remove-btn" data-index="${index}">×</button>
+                    <span class="image-number">${index + 1}</span>
+                `;
+                this.imagePreviews.appendChild(previewItem);
+                
+                // Add remove button listener
+                previewItem.querySelector('.remove-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.removeImage(index);
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+    
+    convertImageToBase64(file, index) {
         const reader = new FileReader();
         reader.onload = (e) => {
             // Remove data:image/...;base64, prefix
             const base64 = e.target.result.split(',')[1];
-            this.uploadedImageBase64 = base64;
+            this.uploadedImagesBase64[index] = base64;
         };
         reader.readAsDataURL(file);
     }
@@ -92,12 +144,11 @@ class GeminiImageGenerator {
         try {
             const apiKey = this.apiKeyInput.value.trim();
             const prompt = this.promptInput.value.trim();
-            const mimeType = this.uploadedImage.type;
             
             // Save prompt to history
             this.savePromptToHistory(prompt);
             
-            const response = await this.callGeminiAPI(apiKey, prompt, mimeType);
+            const response = await this.callGeminiAPI(apiKey, prompt);
             this.handleAPIResponse(response);
             
         } catch (error) {
@@ -108,24 +159,34 @@ class GeminiImageGenerator {
         }
     }
     
-    async callGeminiAPI(apiKey, prompt, mimeType) {
+    async callGeminiAPI(apiKey, prompt) {
+        // Build content array with text and all images
+        const content = [
+            {
+                type: "text",
+                text: prompt
+            }
+        ];
+        
+        // Add all uploaded images to content
+        this.uploadedImages.forEach((file, index) => {
+            const base64 = this.uploadedImagesBase64[index];
+            if (base64) {
+                content.push({
+                    type: "image_url",
+                    image_url: {
+                        url: `data:${file.type};base64,${base64}`
+                    }
+                });
+            }
+        });
+        
         const requestBody = {
             model: "google/gemini-2.5-flash-image-preview",
             messages: [
                 {
                     role: "user",
-                    content: [
-                        {
-                            type: "text",
-                            text: prompt
-                        },
-                        {
-                            type: "image_url",
-                            image_url: {
-                                url: `data:${mimeType};base64,${this.uploadedImageBase64}`
-                            }
-                        }
-                    ]
+                    content: content
                 }
             ]
         };

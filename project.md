@@ -84,3 +84,38 @@ async function main() {
 
 main();
 ```
+
+Multiple image sample code:
+```python
+from google import genai
+from google.genai import types
+from PIL import Image
+from io import BytesIO
+
+client = genai.Client()
+
+# Base image prompts:
+# 1. Dress: "A professionally shot photo of a blue floral summer dress on a plain white background, ghost mannequin style."
+# 2. Model: "Full-body shot of a woman with her hair in a bun, smiling, standing against a neutral grey studio background."
+dress_image = Image.open('/path/to/your/dress.png')
+model_image = Image.open('/path/to/your/model.png')
+
+text_input = """Create a professional e-commerce fashion photo. Take the blue floral dress from the first image and let the woman from the second image wear it. Generate a realistic, full-body shot of the woman wearing the dress, with the lighting and shadows adjusted to match the outdoor environment."""
+
+# Generate an image from a text prompt
+response = client.models.generate_content(
+    model="gemini-2.5-flash-image-preview",
+    contents=[dress_image, model_image, text_input],
+)
+
+image_parts = [
+    part.inline_data.data
+    for part in response.candidates[0].content.parts
+    if part.inline_data
+]
+
+if image_parts:
+    image = Image.open(BytesIO(image_parts[0]))
+    image.save('fashion_ecommerce_shot.png')
+    image.show()
+```
