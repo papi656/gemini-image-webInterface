@@ -8,12 +8,15 @@ class GeminiImageGenerator {
         this.responseArea = document.getElementById('response');
         this.loading = document.getElementById('loading');
         this.promptHistory = document.getElementById('prompt-history');
+        this.themeToggle = document.getElementById('theme-toggle');
+        this.themeIcon = this.themeToggle.querySelector('.theme-icon');
         
         this.uploadedImages = [];
         this.uploadedImagesBase64 = [];
         
         this.initEventListeners();
         this.loadPromptHistory();
+        this.initTheme();
     }
     
     initEventListeners() {
@@ -36,6 +39,32 @@ class GeminiImageGenerator {
         this.generateBtn.addEventListener('click', () => {
             this.generateResponse();
         });
+        
+        // Theme toggle
+        this.themeToggle.addEventListener('click', () => {
+            this.toggleTheme();
+        });
+    }
+    
+    initTheme() {
+        const savedTheme = localStorage.getItem('gemini-theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        // Use saved theme, or system preference, or default to light
+        const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+        this.setTheme(theme);
+    }
+    
+    toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        this.setTheme(newTheme);
+        localStorage.setItem('gemini-theme', newTheme);
+    }
+    
+    setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        this.themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
     }
     
     validateForm() {

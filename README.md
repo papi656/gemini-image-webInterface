@@ -7,7 +7,6 @@ A simple web-based interface to interact with Google's Gemini image generation m
 - Upload images directly from your device
 - Enter custom prompts for image analysis/generation
 - View both text and image responses from Gemini
-- Clean, responsive UI with modern styling
 - API key persistence using localStorage
 
 ## Setup
@@ -21,10 +20,6 @@ A simple web-based interface to interact with Google's Gemini image generation m
    - Enter your OpenRouter API key in the provided field
    - The API key will be saved in your browser's localStorage for future use
 
-3. **Optional: Environment File**:
-   - The `.env.example` file is provided for reference
-   - Note: This is a client-side application, so environment variables are not loaded automatically
-   - API keys must be entered manually in the web interface
 
 ## Usage
 
@@ -52,7 +47,6 @@ This application runs entirely in the browser. Your API key is stored in localSt
 ├── index.html          # Main HTML file
 ├── styles.css          # CSS styling
 ├── script.js           # JavaScript functionality
-├── .env.example        # Example environment file (reference only)
 └── README.md           # This file
 ```
 
