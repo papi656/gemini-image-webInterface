@@ -1,6 +1,7 @@
 class GeminiImageGenerator {
     constructor() {
         this.apiKeyInput = document.getElementById('api-key');
+        this.modelSelect = document.getElementById('model-select');
         this.imageUpload = document.getElementById('image-upload');
         this.promptInput = document.getElementById('prompt');
         this.generateBtn = document.getElementById('generate-btn');
@@ -25,6 +26,7 @@ class GeminiImageGenerator {
             this.validateForm();
         });
         
+
         // Image upload handling
         this.imageUpload.addEventListener('change', (e) => {
             this.handleImageUpload(e);
@@ -71,7 +73,7 @@ class GeminiImageGenerator {
         const hasApiKey = this.apiKeyInput.value.trim().length > 0;
         const hasImages = this.uploadedImages.length > 0;
         const hasPrompt = this.promptInput.value.trim().length > 0;
-        const isValid = hasApiKey && hasImages && hasPrompt;
+        const isValid = hasApiKey && hasPrompt && (hasImages || true); // Image is now optional
         
         this.generateBtn.disabled = !isValid;
         return isValid;
@@ -164,6 +166,8 @@ class GeminiImageGenerator {
         reader.readAsDataURL(file);
     }
     
+
+    
     async generateResponse() {
         if (!this.validateForm()) return;
         
@@ -189,6 +193,8 @@ class GeminiImageGenerator {
     }
     
     async callGeminiAPI(apiKey, prompt) {
+        const selectedModel = this.modelSelect.value;
+
         // Build content array with text and all images
         const content = [
             {
@@ -211,7 +217,7 @@ class GeminiImageGenerator {
         });
         
         const requestBody = {
-            model: "google/gemini-2.5-flash-image-preview",
+            model: selectedModel,
             messages: [
                 {
                     role: "user",

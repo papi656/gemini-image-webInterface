@@ -1,10 +1,4 @@
-Create a simple web based interface to interact with gemini image gen model
-
-It should be a simple UI with a image picker and text box for prompt.
-
-It will be run locally for now.
-
-API key from openrouter
+This file has sample api request for LLM reference.
 
 Sample code for model request:
 ```typescript
